@@ -1,10 +1,10 @@
 !#######################################################################
-! MSIS® (NRL-SOF-014-1) SOFTWARE
-! NRLMSIS® empirical atmospheric model software. Use is governed by the
+! MSISï¿½ (NRL-SOF-014-1) SOFTWARE
+! NRLMSISï¿½ empirical atmospheric model software. Use is governed by the
 ! Open Source Academic Research License Agreement contained in the file
 ! nrlmsis2.1_license.txt, which is part of this software package. BY
 ! USING OR MODIFYING THIS SOFTWARE, YOU ARE AGREEING TO THE TERMS AND
-! CONDITIONS OF THE LICENSE.  
+! CONDITIONS OF THE LICENSE.
 !#######################################################################
 
 !!! ===========================================================================
@@ -19,7 +19,7 @@
 !
 !     CALLING SEQUENCE:
 !       CALL MSISINIT([OPTIONAL ARGUMENTS])
-!  
+!
 !     OPTIONAL ARGUMENTS:
 !       parmpath        File path pointing to the MSIS parameter file.
 !                         Default: Null string (current directory)
@@ -58,7 +58,7 @@
 !                         True = Geodetic altitude (km)
 !                         False = Geopotential height (km)
 !                         Default: True (Geodetic altitude)
-!       lspec_select    Logical array (1:10) flagging which densities to 
+!       lspec_select    Logical array (1:10) flagging which densities to
 !                         calculate.
 !                         True = Calculate, False = Do not calculate
 !                            1 - Mass density
@@ -73,14 +73,14 @@
 !                           10 - NO
 !                         Default values: True
 !       lmass_include   Logical array (1:10) flagging which species to include
-!                         in mass density calculation. Same ordering as 
+!                         in mass density calculation. Same ordering as
 !                         lspec_select.
 !                         Default values: True
 !       lN2_msis00      Logical flag for retrieving NRLMSISE-00 upper
 !                         thermospheric N2 variation. See paper for details.
 !                           False: Thermospheric N2 determined entirely by
 !                             temperature profile and the constant mixing ratio
-!                             of N2 in the lower atmosphere. 
+!                             of N2 in the lower atmosphere.
 !                           True: Upper thermospheric N2 relaxes to NRLMSISE-00
 !                             Values.
 !                         Default: False
@@ -103,7 +103,7 @@ module msis_init
   use msis_constants, only    : rp, nspec, nl, maxnbf, mbf
 
   implicit none
-  
+
   !Model flags
   logical       :: initflag = .false.           !Flags whether model has been initialized
   logical       :: haveparmspace = .false.      !Flags whether parameter space has been initialized and allocated
@@ -140,7 +140,7 @@ module msis_init
   type (basissubset)     :: OA   !Anomalous O
   type (basissubset)     :: NO
   integer                :: nvertparm
-  
+
   ! Reciprocal node difference arrays (constant values needed for B-spline calculations)
   real(kind=rp)          :: etaTN(0:30,2:6) = 0.0_rp
   real(kind=rp)          :: etaO1(0:30,2:6) = 0.0_rp
@@ -157,7 +157,7 @@ contains
   subroutine msisinit(parmpath,parmfile,iun,switch_gfn,switch_legacy, &
                       lzalt_type,lspec_select,lmass_include,lN2_msis00)
 
-    use msis_constants, only : specmass, nspec, maxnbf 
+    use msis_constants, only : specmass, nspec, maxnbf
 
     implicit none
 
@@ -298,7 +298,7 @@ contains
     ! F2, solar sflux modulation of the tides
     tsfx(ctide:cspw-1) = .true.
     ! F3, solar sflux modulation of stationary planetary wave 1
-    psfx(cspw:cspw+59) = .true. 
+    psfx(cspw:cspw+59) = .true.
 
     ! Calculate reciprocal node difference arrays
     do k = 2, 6
@@ -355,7 +355,7 @@ contains
         subset%beta = 0.0_rp
         subset%active = .false.
         subset%fitb = 0
-        
+
         ! Increment vertical parameter counter except for pressure
         if (name .ne. 'PR') nvertparm = nvertparm + nl - bl + 1
 
@@ -479,7 +479,7 @@ contains
   ! TSELEC: Legacy switches and mapping to new switches
   !==================================================================================================
   subroutine tselec(sv)
-  
+
     use msis_constants, only  : nsfx, nsfxmod, nut, cspw, csfx, csfxmod, cmag, cut
 
     implicit none
@@ -487,7 +487,7 @@ contains
     real(4), intent(in)  :: sv(1:25)
 
     integer              :: i
-    
+
     !Set cross-terms flags
     do i = 1, 25
       sav(i) = sv(i)
@@ -498,7 +498,7 @@ contains
         swc(i) = 0.0
       endif
     enddo
-    
+
     !Main effects
     swg(0)                           = .true.                !Global term must be on
     swg(csfx:csfx+nsfx-1)            = (swleg(1) .eq. 1.0)   !Solar flux
@@ -612,7 +612,7 @@ contains
       swg(411:414) = .false.                                   !Mixed UT/Lon/Geomag (Daily mode terms)
       swg(439:440) = .false.                                   !Mixed UT/Lon/Geomag (Storm-time mode terms)
     endif
-    
+
   end subroutine tselec
 
   !==================================================================================================
@@ -629,7 +629,113 @@ contains
     do i = 1, 25
       svv(i) = sav(i)
     enddo
-  
+
   end subroutine tretrv
+
+  !==================================================================================================
+  ! MSISINIT_C: C-compatible wrapper for MSISINIT with fixed arguments
+  !==================================================================================================
+  subroutine msisinit_c(parmpath_c, parmpath_len, parmfile_c, parmfile_len, &
+                        iun_c, use_switch_legacy, switch_legacy_c, &
+                        lzalt_type_c, lspec_select_c, lmass_include_c, lN2_msis00_c) &
+                        bind(C, name='msisinit_c')
+
+    use iso_c_binding, only: c_char, c_int, c_float, c_bool, c_null_char
+    use msis_constants, only : nspec, maxnbf
+
+    implicit none
+
+    ! C-compatible parameters
+    character(kind=c_char), intent(in) :: parmpath_c(*)           ! Path to parameter file (null-terminated)
+    integer(c_int), intent(in), value  :: parmpath_len            ! Length of parmpath string
+    character(kind=c_char), intent(in) :: parmfile_c(*)           ! Parameter file name (null-terminated)
+    integer(c_int), intent(in), value  :: parmfile_len            ! Length of parmfile string
+    integer(c_int), intent(in), value  :: iun_c                   ! File unit number
+    logical(c_bool), intent(in), value :: use_switch_legacy       ! Whether to use legacy switches
+    real(c_float), intent(in)          :: switch_legacy_c(25)     ! Legacy switch array
+    logical(c_bool), intent(in), value :: lzalt_type_c            ! Altitude type flag
+    logical(c_bool), intent(in)        :: lspec_select_c(nspec-1) ! Species selection flags
+    logical(c_bool), intent(in)        :: lmass_include_c(nspec-1)! Mass inclusion flags
+    logical(c_bool), intent(in), value :: lN2_msis00_c            ! N2 MSIS00 flag
+
+    ! Local variables for conversion
+    character(len=256) :: parmpath_f, parmfile_f
+    integer :: i
+    real(4) :: switch_legacy_f(25)
+    logical :: lspec_select_f(nspec-1), lmass_include_f(nspec-1)
+
+    ! Convert C strings to Fortran strings
+    parmpath_f = ' '
+    if (parmpath_len > 0) then
+      do i = 1, min(parmpath_len, 256)
+        if (parmpath_c(i) == c_null_char) exit
+        parmpath_f(i:i) = parmpath_c(i)
+      enddo
+    endif
+
+    parmfile_f = ' '
+    if (parmfile_len > 0) then
+      do i = 1, min(parmfile_len, 256)
+        if (parmfile_c(i) == c_null_char) exit
+        parmfile_f(i:i) = parmfile_c(i)
+      enddo
+    endif
+
+    ! Convert C arrays to Fortran arrays
+    switch_legacy_f = real(switch_legacy_c, 4)
+    lspec_select_f = logical(lspec_select_c)
+    lmass_include_f = logical(lmass_include_c)
+
+    ! Call the original msisinit with appropriate arguments
+    if (len_trim(parmpath_f) > 0 .and. len_trim(parmfile_f) > 0) then
+      if (use_switch_legacy) then
+        call msisinit(parmpath=trim(parmpath_f), parmfile=trim(parmfile_f), &
+                     iun=iun_c, switch_legacy=switch_legacy_f, &
+                     lzalt_type=logical(lzalt_type_c), &
+                     lspec_select=lspec_select_f, &
+                     lmass_include=lmass_include_f, &
+                     lN2_msis00=logical(lN2_msis00_c))
+      else
+        call msisinit(parmpath=trim(parmpath_f), parmfile=trim(parmfile_f), &
+                     iun=iun_c, &
+                     lzalt_type=logical(lzalt_type_c), &
+                     lspec_select=lspec_select_f, &
+                     lmass_include=lmass_include_f, &
+                     lN2_msis00=logical(lN2_msis00_c))
+      endif
+    else if (len_trim(parmfile_f) > 0) then
+      if (use_switch_legacy) then
+        call msisinit(parmfile=trim(parmfile_f), &
+                     iun=iun_c, switch_legacy=switch_legacy_f, &
+                     lzalt_type=logical(lzalt_type_c), &
+                     lspec_select=lspec_select_f, &
+                     lmass_include=lmass_include_f, &
+                     lN2_msis00=logical(lN2_msis00_c))
+      else
+        call msisinit(parmfile=trim(parmfile_f), &
+                     iun=iun_c, &
+                     lzalt_type=logical(lzalt_type_c), &
+                     lspec_select=lspec_select_f, &
+                     lmass_include=lmass_include_f, &
+                     lN2_msis00=logical(lN2_msis00_c))
+      endif
+    else
+      ! Use defaults for path and file
+      if (use_switch_legacy) then
+        call msisinit(iun=iun_c, switch_legacy=switch_legacy_f, &
+                     lzalt_type=logical(lzalt_type_c), &
+                     lspec_select=lspec_select_f, &
+                     lmass_include=lmass_include_f, &
+                     lN2_msis00=logical(lN2_msis00_c))
+      else
+        call msisinit(iun=iun_c, &
+                     lzalt_type=logical(lzalt_type_c), &
+                     lspec_select=lspec_select_f, &
+                     lmass_include=lmass_include_f, &
+                     lN2_msis00=logical(lN2_msis00_c))
+      endif
+    endif
+
+  end subroutine msisinit_c
 
 end module msis_init
