@@ -4,7 +4,7 @@
  Open Source Academic Research License Agreement contained in the file
  nrlmsis2.1_license.txt, which is part of this software package. BY
  USING OR MODIFYING THIS SOFTWARE, YOU ARE AGREEING TO THE TERMS AND
- CONDITIONS OF THE LICENSE.  
+ CONDITIONS OF THE LICENSE.
 #######################################################################
 
 NRLMSIS 2.1 Whole-Atmosphere Empirical Model of Temperature and Neutral Species
@@ -19,11 +19,11 @@ AUTHORS
   John Emmert (john.emmert@nrl.navy.mil)
   Douglas Drob (douglas.drob@nrl.navy.mil)
   McArthur Jones Jr. (mcarthur.jones@nrl.navy.mil)
-  
+
 REFERENCE FOR NRLMSIS 2.0
-  Emmert, J. T., Drob, D. P., Picone, J. M., Siskind, D. E., Jones, M. Jr., 
+  Emmert, J. T., Drob, D. P., Picone, J. M., Siskind, D. E., Jones, M. Jr.,
   Mlynczak, M. G., et al. (2021). NRLMSIS 2.0: A whole-atmosphere empirical model
-  of temperature and neutral species densities. Earth and Space Science, 8, 
+  of temperature and neutral species densities. Earth and Space Science, 8,
   e2020EA001321. https://doi.org/10.1029/2020EA001321
 
 PACKAGE CONTENTS
@@ -48,13 +48,13 @@ PACKAGE CONTENTS
   msis2.1_test_in.txt       ASCII file containing input for test program.
   msis2.1_test_ref_dp.txt   ASCII file containing expected output of test program
                              (double-precision internally)
- 
+
 RELEASE NOTES: MODEL FORMULATION
   Minor changes to the NRLMSIS 2.0 formulation include:
   - Addition of new terms to support fitting of NO densities.
   - Reorganization of support subroutines (alt2gph, gph2alt, bspline, dilog)
     into msis_utils module.
- 
+
 RELEASE NOTES: PARAMETER ESTIMATION
   - NO density parameters were tuned to six NO data sets (ENVISAT/MIPAS, SNOE,
     ACE/FTS, AIM/SOFIE, UARS/HALOE, and Odin/SMR).
@@ -83,6 +83,42 @@ COMPILING THE MODEL CODE
   output exactly matches the expected output in msis2.1_test_ref_dp.txt,
   regardless of the compiler or compiler settings.
 
+BUILDING AS A SHARED LIBRARY
+  To use NRLMSIS 2.1 with other programming languages (C#, Python, etc.) via
+  P/Invoke or ctypes, you need to build it as a shared library (.so on Linux,
+  .dll on Windows, .dylib on macOS).
+
+  Linux/macOS with gfortran:
+    gfortran -shared -fPIC -O3 -cpp -o libmsis21.so msis_constants.F90
+    msis_utils.F90 msis_dfn.F90 msis_gfn.F90 msis_tfn.F90 msis_init.F90
+    msis_gtd8d.F90 msis_calc.F90
+      NOTES:
+      - The -shared flag creates a shared library
+      - The -fPIC flag generates position-independent code (required for shared libs)
+      - Order of source files matters due to Fortran module dependencies
+      - Performance flags like -march=native -ffast-math can be added
+
+  Windows with gfortran (MinGW):
+    gfortran -shared -fPIC -O3 -cpp -o msis21.dll msis_constants.F90
+    msis_utils.F90 msis_dfn.F90 msis_gfn.F90 msis_tfn.F90 msis_init.F90
+    msis_gtd8d.F90 msis_calc.F90
+
+  Intel Fortran:
+    Linux/macOS:
+      ifort -shared -fPIC -O2 -fpp -o libmsis21.so msis_constants.F90
+      msis_utils.F90 msis_dfn.F90 msis_gfn.F90 msis_tfn.F90 msis_init.F90
+      msis_gtd8d.F90 msis_calc.F90
+    Windows:
+      ifort -dll -O2 -fpp -o msis21.dll msis_constants.F90 msis_utils.F90
+      msis_dfn.F90 msis_gfn.F90 msis_tfn.F90 msis_init.F90 msis_gtd8d.F90
+      msis_calc.F90
+
+  USAGE WITH OTHER LANGUAGES:
+  - C#/.NET: Use LibraryImport or DllImport to call MSISCALC or GTD8D
+  - Python: Use ctypes to load the library and call functions
+  - C/C++: Link against the shared library and include appropriate headers
+  - The msis21.parm parameter file must be accessible at runtime
+
 INITIALIZING AND RUNNING THE MODEL
   - The model must be initialized using the MSISINIT subroutine, which sets
     switches and options and loads the model parameter values from a file.
@@ -99,6 +135,6 @@ INITIALIZING AND RUNNING THE MODEL
     GTD8D) or the new interface (subroutine MSISCALC).
   - Details of the input and output arguments of MSISINIT, GTD8D, and MSISCALC
     are provided in the headers of the respective source code files.
-  
+
 ACKNOWLEDGEMENTS
   This work was supported by the Office of Naval Research and NASA.
