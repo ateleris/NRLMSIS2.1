@@ -226,18 +226,18 @@ contains
   subroutine msiscalc_c(day_c, utsec_c, z_c, lat_c, lon_c, sfluxavg_c, sflux_c, ap_c, &
                         tn_c, dn_c, tex_c) bind(C, name='msiscalc_c')
 
-    use iso_c_binding, only: c_float
+    use iso_c_binding, only: c_double
     use msis_constants, only: rp
 
     implicit none
 
     ! C-compatible parameters
-    real(c_float), intent(in), value  :: day_c, utsec_c, z_c, lat_c, lon_c
-    real(c_float), intent(in), value  :: sfluxavg_c, sflux_c
-    real(c_float), intent(in)         :: ap_c(7)
-    real(c_float), intent(out)        :: tn_c
-    real(c_float), intent(out)        :: dn_c(10)
-    real(c_float), intent(out)        :: tex_c
+    real(c_double), intent(in), value  :: day_c, utsec_c, z_c, lat_c, lon_c
+    real(c_double), intent(in), value  :: sfluxavg_c, sflux_c
+    real(c_double), intent(in)         :: ap_c(7)
+    real(c_double), intent(out)        :: tn_c
+    real(c_double), intent(out)        :: dn_c(10)
+    real(c_double), intent(out)        :: tex_c
 
     ! Local variables for conversion
     real(kind=rp) :: day_f, utsec_f, z_f, lat_f, lon_f, sfluxavg_f, sflux_f
@@ -258,9 +258,9 @@ contains
                   tn_f, dn_f, tex_f)
 
     ! Convert results back to C types
-    tn_c = real(tn_f, c_float)
-    dn_c = real(dn_f, c_float)
-    tex_c = real(tex_f, c_float)
+    tn_c = real(tn_f, c_double)
+    dn_c = real(dn_f, c_double)
+    tex_c = real(tex_f, c_double)
 
   end subroutine msiscalc_c
 
