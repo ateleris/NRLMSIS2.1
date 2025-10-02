@@ -25,7 +25,7 @@ extern "C" {
 void msisinit_c(const char* parmpath_c, int parmpath_len,
                 const char* parmfile_c, int parmfile_len,
                 int iun_c, bool use_switch_legacy,
-                const double* switch_legacy_c,
+                const float* switch_legacy_c,
                 bool lzalt_type_c,
                 const bool* lspec_select_c,
                 const bool* lmass_include_c,
@@ -46,9 +46,9 @@ void msisinit_c(const char* parmpath_c, int parmpath_len,
  * @param dn_c        Density array (10 elements, output)
  * @param tex_c       Exospheric temperature (output)
  */
-void msiscalc_c(double day_c, double utsec_c, double z_c, double lat_c, double lon_c,
-                double sfluxavg_c, double sflux_c, const double* ap_c,
-                double* tn_c, double* dn_c, double* tex_c);
+void msiscalc_c(float day_c, float utsec_c, float z_c, float lat_c, float lon_c,
+                float sfluxavg_c, float sflux_c, const float* ap_c,
+                float* tn_c, float* dn_c, float* tex_c);
 
 #ifdef __cplusplus
 }

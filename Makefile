@@ -24,28 +24,26 @@ $(TARGET): $(OBJECTS)
 	$(FC) $(FFLAGS) -o $@ $^
 
 # Compile Fortran source files with explicit dependencies
-CPPFLAGS = -DDBLE
-
 msis_constants.o: msis_constants.F90
-	$(FC) -fPIC $(CPPFLAGS) -c $< -o $@
+	$(FC) -fPIC -c $< -o $@
 
 msis_utils.o: msis_utils.F90 msis_constants.o
-	$(FC) -fPIC $(CPPFLAGS) -c $< -o $@
+	$(FC) -fPIC -c $< -o $@
 
 msis_init.o: msis_init.F90 msis_constants.o
-	$(FC) -fPIC $(CPPFLAGS) -c $< -o $@
+	$(FC) -fPIC -c $< -o $@
 
 msis_gfn.o: msis_gfn.F90 msis_constants.o msis_init.o
-	$(FC) -fPIC $(CPPFLAGS) -c $< -o $@
+	$(FC) -fPIC -c $< -o $@
 
 msis_tfn.o: msis_tfn.F90 msis_constants.o msis_init.o msis_gfn.o msis_utils.o
-	$(FC) -fPIC $(CPPFLAGS) -c $< -o $@
+	$(FC) -fPIC -c $< -o $@
 
 msis_dfn.o: msis_dfn.F90 msis_constants.o msis_utils.o
-	$(FC) -fPIC $(CPPFLAGS) -c $< -o $@
+	$(FC) -fPIC -c $< -o $@
 
 msis_calc.o: msis_calc.F90 msis_constants.o msis_init.o msis_gfn.o msis_tfn.o msis_dfn.o msis_utils.o
-	$(FC) -fPIC $(CPPFLAGS) -c $< -o $@
+	$(FC) -fPIC -c $< -o $@
 
 # Clean build artifacts
 clean:

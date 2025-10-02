@@ -117,7 +117,7 @@ module msis_init
   logical       :: smod(0:nl) = .false.         !Flags which temperature levels get solar flux modulation; loadparmset turns flags on based on parameter values
   logical       :: swg(0:maxnbf-1) = .true.     !Switch array for globe subroutine.
   real(kind=rp) :: masswgt(1:nspec-1)  = 0.0_rp !Weights for calculating mass density
-  real(kind=rp) :: swleg(1:25)=1.0_rp, swc(1:25), sav(1:25) !Legacy switch arrays
+  real(4)       :: swleg(1:25)=1.0, swc(1:25), sav(1:25) !Legacy switch arrays
 
   ! Model parameter arrays
   type basissubset
@@ -165,7 +165,7 @@ contains
     character(len=*), intent(in), optional    :: parmfile                 !Parameter file name
     integer, intent(in), optional             :: iun                      !File unit number for reading parameter file
     logical, intent(in), optional             :: switch_gfn(0:maxnbf-1)   !Switch array for globe subroutine.
-    real(kind=rp), intent(in), optional       :: switch_legacy(1:25)      !Legacy switch array
+    real(4), intent(in), optional             :: switch_legacy(1:25)      !Legacy switch array
     logical, intent(in), optional             :: lzalt_type               !true: height input is geometric, false: height input is geopotential
     logical, intent(in), optional             :: lspec_select(1:nspec-1)  !Array flagging which species densities are required
     logical, intent(in), optional             :: lmass_include(1:nspec-1) !Array flagging which species should be included in mass density
@@ -484,18 +484,18 @@ contains
 
     implicit none
 
-    real(kind=rp), intent(in)  :: sv(1:25)
+    real(4), intent(in)  :: sv(1:25)
 
     integer              :: i
 
     !Set cross-terms flags
     do i = 1, 25
       sav(i) = sv(i)
-      swleg(i) = mod(sv(i), 2.0_rp)
-      if(abs(sv(i)) .eq. 1.0_rp .or. abs(sv(i)) .eq. 2.0_rp) then
-        swc(i) = 1.0_rp
+      swleg(i) = amod(sv(i), 2.0)
+      if(abs(sv(i)) .eq. 1.0 .or. abs(sv(i)) .eq. 2.0) then
+        swc(i) = 1.0
       else
-        swc(i) = 0.0_rp
+        swc(i) = 0.0
       endif
     enddo
 
@@ -622,7 +622,7 @@ contains
 
     implicit none
 
-    real(kind=rp), intent(out) :: svv(1:25)
+    real(4), intent(out) :: svv(1:25)
 
     integer              :: i
 
@@ -640,8 +640,8 @@ contains
                         lzalt_type_c, lspec_select_c, lmass_include_c, lN2_msis00_c) &
                         bind(C, name='msisinit_c')
 
-    use iso_c_binding, only: c_char, c_int, c_double, c_bool, c_null_char
-    use msis_constants, only : nspec, maxnbf, rp
+    use iso_c_binding, only: c_char, c_int, c_float, c_bool, c_null_char
+    use msis_constants, only : nspec, maxnbf
 
     implicit none
 
@@ -652,7 +652,7 @@ contains
     integer(c_int), intent(in), value  :: parmfile_len            ! Length of parmfile string
     integer(c_int), intent(in), value  :: iun_c                   ! File unit number
     logical(c_bool), intent(in), value :: use_switch_legacy       ! Whether to use legacy switches
-    real(c_double), intent(in)         :: switch_legacy_c(25)     ! Legacy switch array
+    real(c_float), intent(in)          :: switch_legacy_c(25)     ! Legacy switch array
     logical(c_bool), intent(in), value :: lzalt_type_c            ! Altitude type flag
     logical(c_bool), intent(in)        :: lspec_select_c(nspec-1) ! Species selection flags
     logical(c_bool), intent(in)        :: lmass_include_c(nspec-1)! Mass inclusion flags
@@ -661,7 +661,7 @@ contains
     ! Local variables for conversion
     character(len=256) :: parmpath_f, parmfile_f
     integer :: i
-    real(kind=rp) :: switch_legacy_f(25)
+    real(4) :: switch_legacy_f(25)
     logical :: lspec_select_f(nspec-1), lmass_include_f(nspec-1)
 
     ! Convert C strings to Fortran strings
@@ -682,7 +682,7 @@ contains
     endif
 
     ! Convert C arrays to Fortran arrays
-    switch_legacy_f = real(switch_legacy_c, kind=rp)
+    switch_legacy_f = real(switch_legacy_c, 4)
     lspec_select_f = logical(lspec_select_c)
     lmass_include_f = logical(lmass_include_c)
 
