@@ -1,6 +1,6 @@
 !#######################################################################
-! MSIS® (NRL-SOF-014-1) SOFTWARE
-! NRLMSIS® empirical atmospheric model software. Use is governed by the
+! MSISï¿½ (NRL-SOF-014-1) SOFTWARE
+! NRLMSISï¿½ empirical atmospheric model software. Use is governed by the
 ! Open Source Academic Research License Agreement contained in the file
 ! nrlmsis2.1_license.txt, which is part of this software package. BY
 ! USING OR MODIFYING THIS SOFTWARE, YOU ARE AGREEING TO THE TERMS AND
@@ -287,7 +287,8 @@ module msis_dfn
 
 ! Failsafe -----   ---------------------------
     case default
-      stop 'Species not yet implemented'
+      dpro%zmin = 1.0e38_rp
+      return
 
     endselect
         
@@ -362,7 +363,8 @@ module msis_dfn
         dpro%Izref = dpro%Izref - dpro%XMi(4)                
       endif
     else 
-      stop 'Integrals at reference height not available'
+      dpro%zmin = 1.0e38_rp
+      return
     endif
 
     ! C1 constraint for O1 at 85 km
@@ -531,7 +533,8 @@ module msis_dfn
     enddo
 
     ! If we are here this is a problem
-    stop 'Error in pwmp'
+    pwmp = m(0)
+    return
 
   end function pwmp
 
